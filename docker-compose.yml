@@ -1,0 +1,71 @@
+services:
+
+  # ─── NGINX — Frontend Hub ──────────────────────────────────
+  nginx:
+    image: nginx:alpine
+    container_name: friday-ui
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./friday/frontend:/usr/share/nginx/html:ro
+
+  # ─── FRIDAY — Backend FastAPI ──────────────────────────────
+  friday:
+    build: ./friday
+    container_name: friday
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data/memory:/data/friday/memory
+      - /usr/local/bin/piper-tts:/usr/local/bin/piper-tts:ro
+      - ./piper-voices:/piper-voices:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    env_file:
+      - .env
+    depends_on:
+      - nginx
+
+  # ─── HOME ASSISTANT ────────────────────────────────────────
+  homeassistant:
+    image: ghcr.io/home-assistant/home-assistant:stable
+    container_name: homeassistant
+    restart: unless-stopped
+    privileged: true
+    network_mode: host
+    volumes:
+      - ./homeassistant:/config
+      - /etc/localtime:/etc/localtime:ro
+
+  # ─── N8N ───────────────────────────────────────────────────
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    volumes:
+      - ./data/n8n:/home/node/.n8n
+    env_file:
+      - .env
+    environment:
+      - N8N_HOST=0.0.0.0
+      - N8N_SECURE_COOKIE=false
+      - N8N_EDITOR_BASE_URL=http://${PI_IP}:5678
+      - WEBHOOK_URL=http://${PI_IP}:5678
+      - N8N_PROXY_HOPS=1
+
+  # ─── OSINT DASHBOARD ───────────────────────────────────────
+  osint:
+    build: ./osint
+    container_name: osint
+    restart: unless-stopped
+    ports:
+      - "8080:5000"
+    env_file:
+      - .env
+    volumes:
+      - ./data/osint:/app/data
+      - ./data/osint/uploads:/app/static/uploads

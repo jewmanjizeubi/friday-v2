@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FRIDAY — Accès</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #020508;
+    --cyan: #00d4ff;
+    --cyan-glow: rgba(0,212,255,0.4);
+    --border: rgba(0,212,255,0.2);
+    --text: #c8e6f0;
+    --text-dim: rgba(200,230,240,0.45);
+    --red: #ff3b3b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: crosshair;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+
+  .login-box {
+    position: relative;
+    background: rgba(5,13,20,0.95);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 48px 40px;
+    width: 360px;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .login-box::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+    box-shadow: 0 0 20px var(--cyan-glow);
+  }
+
+  .logo {
+    font-family: 'Orbitron', monospace;
+    font-size: 32px;
+    font-weight: 900;
+    letter-spacing: 8px;
+    color: #fff;
+    text-shadow: 0 0 30px var(--cyan-glow);
+    text-align: center;
+    margin-bottom: 6px;
+  }
+
+  .sub {
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--text-dim);
+    text-align: center;
+    margin-bottom: 40px;
+    text-transform: uppercase;
+  }
+
+  .field {
+    margin-bottom: 16px;
+  }
+
+  .field label {
+    display: block;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+  }
+
+  .field input {
+    width: 100%;
+    background: rgba(0,212,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .field input:focus {
+    border-color: var(--cyan);
+    box-shadow: 0 0 10px rgba(0,212,255,0.1);
+  }
+
+  .btn {
+    width: 100%;
+    background: rgba(0,212,255,0.08);
+    border: 1px solid var(--cyan);
+    border-radius: 2px;
+    color: var(--cyan);
+    font-family: 'Orbitron', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    padding: 12px;
+    cursor: pointer;
+    margin-top: 24px;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+
+  .btn:hover {
+    background: rgba(0,212,255,0.15);
+    box-shadow: 0 0 20px rgba(0,212,255,0.2);
+  }
+
+  .error {
+    color: var(--red);
+    font-size: 11px;
+    text-align: center;
+    margin-top: 14px;
+    display: none;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+<div class="login-box">
+  <div class="logo">FRIDAY</div>
+  <div class="sub">Authentification requise</div>
+
+  <div class="field">
+    <label>Identifiant</label>
+    <input type="text" id="username" placeholder="alex" autocomplete="username">
+  </div>
+  <div class="field">
+    <label>Mot de passe</label>
+    <input type="password" id="password" placeholder="••••••••" autocomplete="current-password">
+  </div>
+
+  <button class="btn" onclick="login()">Accéder au système</button>
+  <div class="error" id="error-msg">Identifiants incorrects</div>
+</div>
+
+<script>
+  const FRIDAY_API = `http://${window.location.hostname}:8000`;
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter') login();
+  });
+
+  async function login() {
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+    const errEl = document.getElementById('error-msg');
+    errEl.style.display = 'none';
+
+    try {
+      const res = await fetch(`${FRIDAY_API}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ username, password })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        // Stocker le token pour les appels API
+        sessionStorage.setItem('friday_token', data.token);
+        window.location.href = '/hub.html';
+      } else {
+        errEl.style.display = 'block';
+      }
+    } catch (e) {
+      errEl.textContent = 'Erreur de connexion au serveur';
+      errEl.style.display = 'block';
+    }
+  }
+</script>
+</body>
+</html>

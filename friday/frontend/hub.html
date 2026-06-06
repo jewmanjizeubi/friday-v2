@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FRIDAY — Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #020508;
+    --bg2: #050d14;
+    --cyan: #00d4ff;
+    --cyan-dim: rgba(0,212,255,0.15);
+    --cyan-glow: rgba(0,212,255,0.4);
+    --green: #00ff9d;
+    --green-dim: rgba(0,255,157,0.12);
+    --orange: #ff9500;
+    --orange-dim: rgba(255,149,0,0.15);
+    --red: #ff3b3b;
+    --red-dim: rgba(255,59,59,0.15);
+    --text: #c8e6f0;
+    --text-dim: rgba(200,230,240,0.45);
+    --border: rgba(0,212,255,0.18);
+    --border-bright: rgba(0,212,255,0.5);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Exo 2', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    cursor: crosshair;
+  }
+
+  /* Grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Radial glow center */
+  body::after {
+    content: '';
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 800px;
+    height: 800px;
+    background: radial-gradient(ellipse, rgba(0,212,255,0.04) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 32px 24px;
+  }
+
+  /* ── HEADER ── */
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 40px;
+    animation: fadeDown 0.6s ease both;
+  }
+
+  .logo-block {}
+
+  .logo-eyebrow {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: var(--cyan);
+    opacity: 0.6;
+    margin-bottom: 4px;
+  }
+
+  .logo-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 42px;
+    font-weight: 900;
+    letter-spacing: 8px;
+    color: #fff;
+    text-shadow: 0 0 30px var(--cyan-glow), 0 0 60px rgba(0,212,255,0.2);
+    line-height: 1;
+  }
+
+  .logo-sub {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--text-dim);
+    margin-top: 6px;
+  }
+
+  /* ── CLOCK ── */
+  .clock-block {
+    text-align: right;
+  }
+
+  #clock {
+    font-family: 'Orbitron', monospace;
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--cyan);
+    text-shadow: 0 0 20px var(--cyan-glow);
+    letter-spacing: 3px;
+  }
+
+  #date-display {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    margin-top: 4px;
+    text-transform: uppercase;
+  }
+
+  /* ── DIVIDER ── */
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border-bright), var(--cyan), var(--border-bright), transparent);
+    margin-bottom: 32px;
+    position: relative;
+    animation: fadeIn 1s ease both 0.3s;
+  }
+
+  .divider::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 6px;
+    height: 6px;
+    background: var(--cyan);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--cyan);
+  }
+
+  /* ── TOP ROW: WEATHER + STATUS ── */
+  .top-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+    animation: fadeUp 0.6s ease both 0.2s;
+  }
+
+  .panel {
+    background: linear-gradient(135deg, rgba(0,212,255,0.04), rgba(0,0,0,0.3));
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 20px 24px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+
+  .panel::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 100%;
+    background: var(--cyan);
+    box-shadow: 0 0 8px var(--cyan);
+  }
+
+  .panel:hover {
+    border-color: var(--border-bright);
+    box-shadow: 0 0 20px rgba(0,212,255,0.06);
+  }
+
+  .panel-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+  }
+
+  /* Weather */
+  .weather-main {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .weather-icon {
+    font-size: 36px;
+    line-height: 1;
+  }
+
+  .weather-temp {
+    font-family: 'Orbitron', monospace;
+    font-size: 28px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .weather-desc {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    margin-top: 2px;
+    text-transform: uppercase;
+  }
+
+  .weather-details {
+    display: flex;
+    gap: 16px;
+    margin-top: 12px;
+  }
+
+  .weather-detail {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+  }
+
+  .weather-detail span {
+    color: var(--cyan);
+  }
+
+  /* Status panel */
+  .status-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .status-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    position: relative;
+  }
+
+  .status-dot.online {
+    background: var(--green);
+    box-shadow: 0 0 6px var(--green);
+    animation: pulse-green 2s infinite;
+  }
+
+  .status-dot.offline {
+    background: var(--red);
+    box-shadow: 0 0 6px var(--red);
+  }
+
+  .status-dot.loading {
+    background: var(--orange);
+    box-shadow: 0 0 6px var(--orange);
+    animation: pulse-orange 1s infinite;
+  }
+
+  .status-name {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+  }
+
+  .status-name.online { color: var(--text); }
+
+  /* ── SERVICES GRID ── */
+  .section-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: var(--text-dim);
+    margin-bottom: 16px;
+    text-transform: uppercase;
+  }
+
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .service-card {
+    background: linear-gradient(135deg, rgba(5,13,20,0.9), rgba(2,5,8,0.95));
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 24px 20px;
+    text-decoration: none;
+    color: inherit;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    display: block;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .service-card:nth-child(1) { animation-delay: 0.1s; }
+  .service-card:nth-child(2) { animation-delay: 0.15s; }
+  .service-card:nth-child(3) { animation-delay: 0.2s; }
+  .service-card:nth-child(4) { animation-delay: 0.25s; }
+  .service-card:nth-child(5) { animation-delay: 0.3s; }
+  .service-card:nth-child(6) { animation-delay: 0.35s; }
+
+  .service-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--card-color, var(--cyan));
+    box-shadow: 0 0 10px var(--card-color, var(--cyan));
+    opacity: 0.6;
+    transition: opacity 0.3s;
+  }
+
+  .service-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at top left, var(--card-color-dim, var(--cyan-dim)), transparent 60%);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .service-card:hover {
+    border-color: var(--card-color, var(--cyan));
+    box-shadow: 0 0 30px rgba(0,0,0,0.5), inset 0 0 20px var(--card-color-dim, var(--cyan-dim));
+    transform: translateY(-2px);
+  }
+
+  .service-card:hover::before { opacity: 1; }
+  .service-card:hover::after { opacity: 1; }
+
+  .service-icon {
+    font-size: 28px;
+    margin-bottom: 14px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .service-name {
+    font-family: 'Orbitron', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: #fff;
+    margin-bottom: 4px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .service-desc {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    margin-bottom: 16px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .service-url {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    color: var(--card-color, var(--cyan));
+    opacity: 0.5;
+    letter-spacing: 1px;
+    position: relative;
+    z-index: 1;
+    transition: opacity 0.3s;
+  }
+
+  .service-card:hover .service-url { opacity: 1; }
+
+  .service-badge {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+    z-index: 1;
+    animation: pulse-green 2s infinite;
+  }
+
+  .service-badge.offline {
+    background: var(--red);
+    box-shadow: 0 0 8px var(--red);
+    animation: none;
+  }
+
+  /* Colors per service */
+  .card-friday  { --card-color: #00d4ff; --card-color-dim: rgba(0,212,255,0.08); }
+  .card-journal { --card-color: #00ff9d; --card-color-dim: rgba(0,255,157,0.08); }
+  .card-osint   { --card-color: #ff9500; --card-color-dim: rgba(255,149,0,0.08); }
+  .card-ha      { --card-color: #5ac8fa; --card-color-dim: rgba(90,200,250,0.08); }
+  .card-n8n     { --card-color: #bf5af2; --card-color-dim: rgba(191,90,242,0.08); }
+  .card-monitor { --card-color: #ff6b35; --card-color-dim: rgba(255,107,53,0.08); }
+
+  /* ── FOOTER ── */
+  footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    animation: fadeIn 1s ease both 0.5s;
+  }
+
+  .footer-left {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+  }
+
+  .footer-left span {
+    color: var(--green);
+  }
+
+  .footer-right {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+  }
+
+  /* ── SCAN LINE EFFECT ── */
+  .scanline {
+    position: fixed;
+    top: -100%;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(0,212,255,0.3), transparent);
+    animation: scanline 8s linear infinite;
+    pointer-events: none;
+    z-index: 100;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  @keyframes pulse-green {
+    0%, 100% { box-shadow: 0 0 4px var(--green); }
+    50%       { box-shadow: 0 0 12px var(--green), 0 0 20px rgba(0,255,157,0.3); }
+  }
+
+  @keyframes pulse-orange {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.4; }
+  }
+
+  @keyframes scanline {
+    0%   { top: -2px; }
+    100% { top: 100%; }
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0; }
+  }
+
+  .blink { animation: blink 1s step-end infinite; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    .logo-title { font-size: 28px; letter-spacing: 5px; }
+    #clock { font-size: 24px; }
+    .top-row { grid-template-columns: 1fr; }
+    .services-grid { grid-template-columns: 1fr 1fr; }
+  }
+
+  @media (max-width: 480px) {
+    .services-grid { grid-template-columns: 1fr; }
+    header { flex-direction: column; gap: 16px; }
+    .clock-block { text-align: left; }
+  }
+</style>
+</head>
+<body>
+
+<div class="scanline"></div>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo-block">
+      <div class="logo-eyebrow">SYSTÈME OPÉRATIONNEL</div>
+      <div class="logo-title">FRIDAY</div>
+      <div class="logo-sub">PERSONAL AI ASSISTANT — RASPBERRY PI 5 — 192.168.1.9</div>
+    </div>
+    <div class="clock-block">
+      <div id="clock">00:00:00</div>
+      <div id="date-display">Chargement...</div>
+    </div>
+  </header>
+
+  <div class="divider"></div>
+
+  <!-- TOP ROW: MÉTÉO + STATUT -->
+  <div class="top-row">
+
+    <!-- Météo -->
+    <div class="panel">
+      <div class="panel-label">// Météo locale</div>
+      <div id="weather-content">
+        <div class="weather-main">
+          <div class="weather-icon" id="w-icon">⏳</div>
+          <div>
+            <div class="weather-temp" id="w-temp">--°C</div>
+            <div class="weather-desc" id="w-desc">Chargement...</div>
+          </div>
+        </div>
+        <div class="weather-details">
+          <div class="weather-detail">HUMIDITÉ <span id="w-hum">--%</span></div>
+          <div class="weather-detail">VENT <span id="w-wind">-- km/h</span></div>
+          <div class="weather-detail">RESSENTI <span id="w-feel">--°C</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Statut services -->
+    <div class="panel">
+      <div class="panel-label">// Statut des services</div>
+      <div class="status-grid" id="status-grid">
+        <div class="status-item">
+          <div class="status-dot loading" id="dot-friday"></div>
+          <div class="status-name" id="lbl-friday">FRIDAY API</div>
+        </div>
+        <div class="status-item">
+          <div class="status-dot loading" id="dot-ha"></div>
+          <div class="status-name" id="lbl-ha">HOME ASSISTANT</div>
+        </div>
+        <div class="status-item">
+          <div class="status-dot loading" id="dot-n8n"></div>
+          <div class="status-name" id="lbl-n8n">N8N</div>
+        </div>
+        <div class="status-item">
+          <div class="status-dot loading" id="dot-osint"></div>
+          <div class="status-name" id="lbl-osint">OSINT DASHBOARD</div>
+        </div>
+        <div class="status-item">
+          <div class="status-dot loading" id="dot-ui"></div>
+          <div class="status-name" id="lbl-ui">FRIDAY UI</div>
+        </div>
+        <div class="status-item">
+          <div class="status-dot online" id="dot-hub"></div>
+          <div class="status-name online" id="lbl-hub">HUB ←</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SERVICES -->
+  <div class="section-label">// Accès rapide — services</div>
+  <div class="services-grid">
+
+    <a href="http://192.168.1.9:3000" class="service-card card-friday" target="_blank">
+      <div class="service-badge" id="badge-friday"></div>
+      <div class="service-icon">🤖</div>
+      <div class="service-name">FRIDAY</div>
+      <div class="service-desc">Interface conversationnelle IA</div>
+      <div class="service-url">:3000 → index.html</div>
+    </a>
+
+    <a href="http://192.168.1.9:3000/journal.html" class="service-card card-journal" target="_blank">
+      <div class="service-badge online" id="badge-journal"></div>
+      <div class="service-icon">📓</div>
+      <div class="service-name">JOURNAL</div>
+      <div class="service-desc">Briefings & événements du jour</div>
+      <div class="service-url">:3000 → journal.html</div>
+    </a>
+
+    <a href="http://192.168.1.9:8080" class="service-card card-osint" target="_blank">
+      <div class="service-badge" id="badge-osint"></div>
+      <div class="service-icon">🔍</div>
+      <div class="service-name">OSINT</div>
+      <div class="service-desc">Dashboard de veille & renseignement</div>
+      <div class="service-url">:8080 → Flask dashboard</div>
+    </a>
+
+    <a href="http://192.168.1.9:8123" class="service-card card-ha" target="_blank">
+      <div class="service-badge" id="badge-ha"></div>
+      <div class="service-icon">🏠</div>
+      <div class="service-name">HOME ASSISTANT</div>
+      <div class="service-desc">Domotique & automatisation</div>
+      <div class="service-url">:8123 → HA dashboard</div>
+    </a>
+
+    <a href="http://192.168.1.9:5678" class="service-card card-n8n" target="_blank">
+      <div class="service-badge" id="badge-n8n"></div>
+      <div class="service-icon">⚙️</div>
+      <div class="service-name">N8N</div>
+      <div class="service-desc">Workflows & automatisations</div>
+      <div class="service-url">:5678 → N8N editor</div>
+    </a>
+
+    <a href="http://192.168.1.9:8000/monitoring" class="service-card card-monitor" target="_blank">
+      <div class="service-badge online"></div>
+      <div class="service-icon">📊</div>
+      <div class="service-name">MONITORING</div>
+      <div class="service-desc">CPU · RAM · Température · Docker</div>
+      <div class="service-url">:8000 → /monitoring</div>
+    </a>
+
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-left">
+      FRIDAY v2.0 — PI5 8GB — <span>OPÉRATIONNEL</span><span class="blink">_</span>
+    </div>
+    <div class="footer-right" id="uptime-display">
+      UPTIME: CHARGEMENT...
+    </div>
+  </footer>
+
+</div>
+
+<script>
+  // ── HORLOGE ──
+  const DAYS = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+  const MONTHS = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+
+  function updateClock() {
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2,'0');
+    const m = String(now.getMinutes()).padStart(2,'0');
+    const s = String(now.getSeconds()).padStart(2,'0');
+    document.getElementById('clock').textContent = `${h}:${m}:${s}`;
+    const day = DAYS[now.getDay()];
+    const date = now.getDate();
+    const month = MONTHS[now.getMonth()];
+    const year = now.getFullYear();
+    document.getElementById('date-display').textContent = `${day} ${date} ${month} ${year}`;
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  // ── MÉTÉO (OpenWeatherMap) ──
+  const WEATHER_API = 'http://192.168.1.9:8000/weather';
+
+  const weatherIcons = {
+    'Clear': '☀️', 'Clouds': '☁️', 'Rain': '🌧️',
+    'Drizzle': '🌦️', 'Thunderstorm': '⛈️', 'Snow': '❄️',
+    'Mist': '🌫️', 'Fog': '🌫️', 'Haze': '🌫️',
+  };
+
+  async function loadWeather() {
+    try {
+      const r = await fetch(WEATHER_API, { signal: AbortSignal.timeout(5000) });
+      const d = await r.json();
+      const main = d.weather?.[0]?.main || '';
+      document.getElementById('w-icon').textContent = weatherIcons[main] || '🌡️';
+      document.getElementById('w-temp').textContent = `${Math.round(d.main?.temp ?? '--')}°C`;
+      document.getElementById('w-desc').textContent = (d.weather?.[0]?.description || '').toUpperCase();
+      document.getElementById('w-hum').textContent = `${d.main?.humidity ?? '--'}%`;
+      document.getElementById('w-wind').textContent = `${Math.round((d.wind?.speed ?? 0) * 3.6)} km/h`;
+      document.getElementById('w-feel').textContent = `${Math.round(d.main?.feels_like ?? '--')}°C`;
+    } catch {
+      // Fallback : météo via navigator geolocation + open-meteo (pas de clé requise)
+      loadWeatherFallback();
+    }
+  }
+
+  async function loadWeatherFallback() {
+    try {
+      // Paris par défaut si pas de géoloc
+      const r = await fetch('https://api.open-meteo.com/v1/forecast?latitude=48.85&longitude=2.35&current=temperature_2m,relative_humidity_2m,apparent_temperature,wind_speed_10m,weather_code&wind_speed_unit=kmh');
+      const d = await r.json();
+      const c = d.current;
+      const wc = c.weather_code;
+      const icon = wc <= 1 ? '☀️' : wc <= 3 ? '⛅' : wc <= 48 ? '🌫️' : wc <= 67 ? '🌧️' : wc <= 77 ? '❄️' : wc <= 82 ? '🌦️' : '⛈️';
+      const desc = wc <= 1 ? 'DÉGAGÉ' : wc <= 3 ? 'NUAGEUX' : wc <= 48 ? 'BROUILLARD' : wc <= 67 ? 'PLUIE' : wc <= 77 ? 'NEIGE' : 'ORAGE';
+      document.getElementById('w-icon').textContent = icon;
+      document.getElementById('w-temp').textContent = `${Math.round(c.temperature_2m)}°C`;
+      document.getElementById('w-desc').textContent = desc;
+      document.getElementById('w-hum').textContent = `${c.relative_humidity_2m}%`;
+      document.getElementById('w-wind').textContent = `${Math.round(c.wind_speed_10m)} km/h`;
+      document.getElementById('w-feel').textContent = `${Math.round(c.apparent_temperature)}°C`;
+    } catch {
+      document.getElementById('w-icon').textContent = '⚠️';
+      document.getElementById('w-desc').textContent = 'INDISPONIBLE';
+    }
+  }
+
+  // ── STATUT DES SERVICES ──
+  const SERVICES = [
+    { id: 'friday', url: 'http://192.168.1.9:8000/monitoring/health', name: 'FRIDAY API' },
+    { id: 'ha',     url: 'http://192.168.1.9:8123',                   name: 'HOME ASSISTANT' },
+    { id: 'n8n',    url: 'http://192.168.1.9:5678',                   name: 'N8N' },
+    { id: 'osint',  url: 'http://192.168.1.9:8080',                   name: 'OSINT DASHBOARD' },
+    { id: 'ui',     url: 'http://192.168.1.9:3000',                   name: 'FRIDAY UI' },
+  ];
+
+  async function checkService(svc) {
+    const dot = document.getElementById(`dot-${svc.id}`);
+    const lbl = document.getElementById(`lbl-${svc.id}`);
+    const badge = document.getElementById(`badge-${svc.id}`);
+    try {
+      const r = await fetch(svc.url, { mode: 'no-cors', signal: AbortSignal.timeout(3000) });
+      // no-cors → opaque response → toujours "success" si le serveur répond
+      dot.className = 'status-dot online';
+      lbl.className = 'status-name online';
+      if (badge) badge.className = 'service-badge';
+    } catch {
+      dot.className = 'status-dot offline';
+      lbl.className = 'status-name';
+      if (badge) badge.className = 'service-badge offline';
+    }
+  }
+
+  async function checkAllServices() {
+    await Promise.all(SERVICES.map(checkService));
+  }
+
+  // ── UPTIME ──
+  async function loadUptime() {
+    try {
+      const r = await fetch('http://192.168.1.9:8000/monitoring', { signal: AbortSignal.timeout(4000) });
+      const d = await r.json();
+      const up = d.uptime || d.system?.uptime || '';
+      if (up) document.getElementById('uptime-display').textContent = `UPTIME: ${up.toUpperCase()}`;
+    } catch {
+      document.getElementById('uptime-display').textContent = 'UPTIME: N/A';
+    }
+  }
+
+  // ── INIT ──
+  loadWeather();
+  checkAllServices();
+  loadUptime();
+  setInterval(checkAllServices, 30000);
+  setInterval(loadWeather, 600000);
+  setInterval(loadUptime, 60000);
+</script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+# ─── IA & Mémoire ─────────────────────────────────────────
+anthropic>=0.40.0
+mem0ai>=0.1.0
+chromadb>=0.5.0
+sentence-transformers>=3.0.0
+
+# ─── API Server ───────────────────────────────────────────
+fastapi>=0.115.0
+uvicorn[standard]>=0.32.0
+python-multipart>=0.0.12
+
+# ─── Google OAuth (Gmail + Calendar) ──────────────────────
+google-auth>=2.0.0
+google-auth-oauthlib>=1.0.0
+google-api-python-client>=2.0.0
+
+# ─── Voix ─────────────────────────────────────────────────
+openai-whisper>=20240930
+requests>=2.32.0
+
+# ─── Utilitaires ──────────────────────────────────────────
+python-dotenv>=1.0.0
+pydantic>=2.0.0
+psutil
+newspaper3k
+lxml_html_clean
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4

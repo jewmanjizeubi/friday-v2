@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Friday</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700&family=Exo+2:wght@300;400;500&display=swap');
+
+  :root {
+    --bg: #030508;
+    --panel: #070f1a;
+    --border: #0a2240;
+    --accent: #00c8ff;
+    --accent2: #0055cc;
+    --green: #00ff9d;
+    --warn: #ff6b35;
+    --text: #a8d4f0;
+    --text-dim: #3a6a8a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    font-family: 'Exo 2', sans-serif;
+    color: var(--text);
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* Grid bg */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,80,180,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,80,180,0.03) 1px, transparent 1px);
+    background-size: 32px 32px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Header */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(3,5,8,0.95);
+    position: relative;
+    z-index: 10;
+    flex-shrink: 0;
+  }
+
+  .header-left { display: flex; align-items: center; gap: 10px; }
+
+  .header-logo {
+    font-family: 'Orbitron', monospace;
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 4px;
+    text-shadow: 0 0 20px rgba(0,200,255,0.5);
+  }
+
+  .status-badge {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+  }
+
+  .status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 6px var(--green);
+    animation: blink 2s ease-in-out infinite;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .header-right { display: flex; gap: 8px; align-items: center; }
+
+  .icon-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-dim);
+    cursor: pointer;
+    padding: 6px 10px;
+    font-size: 14px;
+    transition: all 0.2s;
+  }
+  .icon-btn:hover, .icon-btn.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    box-shadow: 0 0 10px rgba(0,200,255,0.2);
+  }
+
+  /* Messages */
+  .messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    position: relative;
+    z-index: 1;
+    scroll-behavior: smooth;
+  }
+
+  .messages::-webkit-scrollbar { width: 4px; }
+  .messages::-webkit-scrollbar-track { background: transparent; }
+  .messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .message {
+    display: flex;
+    gap: 10px;
+    animation: msgIn 0.3s ease;
+    max-width: 85%;
+  }
+
+  @keyframes msgIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .message.user { align-self: flex-end; flex-direction: row-reverse; }
+  .message.friday { align-self: flex-start; }
+
+  .msg-avatar {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .friday .msg-avatar {
+    background: rgba(0,100,200,0.2);
+    border: 1px solid var(--accent2);
+    box-shadow: 0 0 10px rgba(0,200,255,0.15);
+  }
+
+  .user .msg-avatar {
+    background: rgba(0,80,120,0.2);
+    border: 1px solid var(--border);
+  }
+
+  .msg-bubble {
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 14px;
+    line-height: 1.5;
+    position: relative;
+  }
+
+  .friday .msg-bubble {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-top-left-radius: 4px;
+  }
+
+  .user .msg-bubble {
+    background: rgba(0,80,180,0.15);
+    border: 1px solid rgba(0,100,200,0.2);
+    border-top-right-radius: 4px;
+    color: #c8e8ff;
+  }
+
+  .msg-time {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    color: var(--text-dim);
+    margin-top: 4px;
+    display: block;
+  }
+
+  .friday .msg-time { text-align: left; }
+  .user .msg-time { text-align: right; }
+
+  /* Audio player inline */
+  .msg-audio {
+    margin-top: 8px;
+  }
+
+  .msg-audio audio {
+    width: 100%;
+    height: 28px;
+    filter: invert(0.7) sepia(1) hue-rotate(180deg);
+  }
+
+  /* Typing indicator */
+  .typing {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 10px 14px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    border-top-left-radius: 4px;
+    width: fit-content;
+  }
+
+  .typing span {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: typing 1.2s ease-in-out infinite;
+  }
+
+  .typing span:nth-child(2) { animation-delay: 0.2s; }
+  .typing span:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes typing {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.3; }
+    30% { transform: translateY(-4px); opacity: 1; }
+  }
+
+  /* Webcam preview */
+  .webcam-preview {
+    position: relative;
+    background: #000;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    display: none;
+  }
+
+  .webcam-preview.active { display: block; }
+
+  .webcam-preview video {
+    width: 100%;
+    max-height: 160px;
+    object-fit: cover;
+    display: block;
+  }
+
+  .webcam-capture-btn {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    background: rgba(0,200,255,0.15);
+    border: 1px solid var(--accent);
+    border-radius: 6px;
+    color: var(--accent);
+    cursor: pointer;
+    padding: 6px 12px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+  }
+
+  .webcam-close-btn {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: rgba(255,0,0,0.2);
+    border: 1px solid rgba(255,50,50,0.3);
+    border-radius: 4px;
+    color: #ff6666;
+    cursor: pointer;
+    padding: 2px 6px;
+    font-size: 12px;
+  }
+
+  /* Input zone */
+  .input-zone {
+    padding: 12px 16px;
+    border-top: 1px solid var(--border);
+    background: rgba(3,5,8,0.95);
+    position: relative;
+    z-index: 10;
+    flex-shrink: 0;
+  }
+
+  .image-preview-strip {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+    display: none;
+  }
+
+  .image-preview-strip.active { display: flex; }
+
+  .image-preview-thumb {
+    width: 50px; height: 50px;
+    border-radius: 6px;
+    object-fit: cover;
+    border: 1px solid var(--accent2);
+    position: relative;
+  }
+
+  .remove-img {
+    position: absolute;
+    top: -4px; right: -4px;
+    width: 16px; height: 16px;
+    background: var(--warn);
+    border-radius: 50%;
+    font-size: 10px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    color: white;
+    border: none;
+  }
+
+  .input-row {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+  }
+
+  .input-field {
+    flex: 1;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: 'Exo 2', sans-serif;
+    font-size: 14px;
+    resize: none;
+    outline: none;
+    min-height: 42px;
+    max-height: 120px;
+    transition: border-color 0.2s;
+    line-height: 1.4;
+  }
+
+  .input-field:focus { border-color: rgba(0,150,255,0.4); }
+  .input-field::placeholder { color: var(--text-dim); }
+
+  .send-btn {
+    background: linear-gradient(135deg, var(--accent2), #003a99);
+    border: 1px solid var(--accent);
+    border-radius: 10px;
+    color: var(--accent);
+    cursor: pointer;
+    padding: 10px 16px;
+    font-size: 16px;
+    transition: all 0.2s;
+    height: 42px;
+    display: flex; align-items: center;
+  }
+
+  .send-btn:hover {
+    box-shadow: 0 0 15px rgba(0,200,255,0.3);
+    transform: scale(1.02);
+  }
+
+  .send-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  .mic-btn {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text-dim);
+    cursor: pointer;
+    padding: 10px 14px;
+    font-size: 16px;
+    transition: all 0.2s;
+    height: 42px;
+    display: flex; align-items: center;
+  }
+
+  .mic-btn.recording {
+    border-color: var(--warn);
+    color: var(--warn);
+    box-shadow: 0 0 12px rgba(255,107,53,0.3);
+    animation: micPulse 1s ease-in-out infinite;
+  }
+
+  @keyframes micPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+
+  /* Config panel */
+  .config-panel {
+    display: none;
+    position: fixed;
+    top: 0; right: 0; bottom: 0;
+    width: min(320px, 90vw);
+    background: rgba(6,13,24,0.98);
+    border-left: 1px solid var(--border);
+    z-index: 100;
+    padding: 20px;
+    overflow-y: auto;
+    animation: slideIn 0.2s ease;
+  }
+
+  @keyframes slideIn {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+  }
+
+  .config-panel.active { display: block; }
+
+  .config-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 14px;
+    color: var(--accent);
+    margin-bottom: 20px;
+    letter-spacing: 2px;
+  }
+
+  .config-section { margin-bottom: 20px; }
+
+  .config-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  .config-input {
+    width: 100%;
+    background: rgba(0,20,50,0.5);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 10px;
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    outline: none;
+  }
+
+  .config-input:focus { border-color: var(--accent2); }
+
+  .config-save-btn {
+    width: 100%;
+    background: rgba(0,100,200,0.2);
+    border: 1px solid var(--accent2);
+    border-radius: 8px;
+    color: var(--accent);
+    cursor: pointer;
+    padding: 10px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    margin-top: 10px;
+    transition: all 0.2s;
+  }
+
+  .config-save-btn:hover { background: rgba(0,100,200,0.3); }
+
+  .overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 99;
+  }
+  .overlay.active { display: block; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-left">
+    <div class="header-logo">FRIDAY</div>
+    <div class="status-badge">
+      <div class="status-dot" id="statusDot"></div>
+      <span id="statusText">EN LIGNE</span>
+    </div>
+  </div>
+  <div class="header-right">
+    <button class="icon-btn" id="webcamBtn" title="Webcam">📷</button>
+    <button class="icon-btn" id="resetBtn" title="Nouvelle conversation">↺</button>
+    <button class="icon-btn" id="configBtn" title="Paramètres">⚙️</button>
+  </div>
+</div>
+
+<!-- Messages -->
+<div class="messages" id="messages">
+  <div class="message friday">
+    <div class="msg-avatar">🤖</div>
+    <div>
+      <div class="msg-bubble">
+        Bonjour Alex. Systèmes en ligne. Comment puis-je vous aider ?
+      </div>
+      <span class="msg-time" id="initTime"></span>
+    </div>
+  </div>
+</div>
+
+<!-- Webcam preview -->
+<div class="webcam-preview" id="webcamPreview">
+  <video id="webcamVideo" autoplay muted playsinline></video>
+  <button class="webcam-close-btn" id="webcamClose">✕</button>
+  <button class="webcam-capture-btn" id="webcamCapture">📸 Capturer & envoyer</button>
+</div>
+
+<!-- Input zone -->
+<div class="input-zone">
+  <div class="image-preview-strip" id="imagePreviewStrip"></div>
+  <div class="input-row">
+    <textarea
+      class="input-field"
+      id="inputField"
+      placeholder="Parlez à Friday..."
+      rows="1"
+    ></textarea>
+    <button class="mic-btn" id="micBtn">🎙️</button>
+    <button class="send-btn" id="sendBtn">➤</button>
+  </div>
+</div>
+
+<!-- Config panel -->
+<div class="overlay" id="overlay"></div>
+<div class="config-panel" id="configPanel">
+  <div class="config-title">// CONFIGURATION</div>
+
+  <div class="config-section">
+    <span class="config-label">API FRIDAY (URL)</span>
+    <input type="text" class="config-input" id="cfgApiUrl" placeholder="http://raspberrypi.local:8000">
+  </div>
+
+  <div class="config-section">
+    <span class="config-label">TOKEN SECRET</span>
+    <input type="password" class="config-input" id="cfgToken" placeholder="Votre FRIDAY_SECRET">
+  </div>
+
+  <div class="config-section">
+    <span class="config-label">RÉPONSE VOCALE</span>
+    <select class="config-input" id="cfgVoice">
+      <option value="auto">Auto (si disponible)</option>
+      <option value="always">Toujours</option>
+      <option value="never">Jamais</option>
+    </select>
+  </div>
+
+  <button class="config-save-btn" id="cfgSave">SAUVEGARDER</button>
+</div>
+
+<script>
+// ─── CONFIG ───────────────────────────────────────────────────────────────────
+const cfg = {
+  apiUrl: localStorage.getItem('friday_api_url') || 'http://localhost:8000',
+  token:  localStorage.getItem('friday_token')   || '',
+  voice:  localStorage.getItem('friday_voice')   || 'auto',
+};
+
+// Pré-remplir les inputs config
+document.getElementById('cfgApiUrl').value = cfg.apiUrl;
+document.getElementById('cfgToken').value  = cfg.token;
+document.getElementById('cfgVoice').value  = cfg.voice;
+document.getElementById('initTime').textContent = new Date().toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+
+// ─── ÉTAT ─────────────────────────────────────────────────────────────────────
+let isProcessing = false;
+let isRecording  = false;
+let mediaRecorder = null;
+let audioChunks  = [];
+let webcamStream = null;
+let pendingImageB64 = null;
+
+// ─── ÉLÉMENTS ─────────────────────────────────────────────────────────────────
+const messagesEl    = document.getElementById('messages');
+const inputField    = document.getElementById('inputField');
+const sendBtn       = document.getElementById('sendBtn');
+const micBtn        = document.getElementById('micBtn');
+const webcamBtn     = document.getElementById('webcamBtn');
+const webcamPreview = document.getElementById('webcamPreview');
+const webcamVideo   = document.getElementById('webcamVideo');
+const webcamClose   = document.getElementById('webcamClose');
+const webcamCapture = document.getElementById('webcamCapture');
+const configBtn     = document.getElementById('configBtn');
+const configPanel   = document.getElementById('configPanel');
+const overlay       = document.getElementById('overlay');
+const resetBtn      = document.getElementById('resetBtn');
+const imageStrip    = document.getElementById('imagePreviewStrip');
+
+// ─── HELPERS ──────────────────────────────────────────────────────────────────
+function now() {
+  return new Date().toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+}
+
+function addMessage(role, text, audioB64 = null, imgSrc = null) {
+  const isUser = role === 'user';
+  const div = document.createElement('div');
+  div.className = `message ${isUser ? 'user' : 'friday'}`;
+
+  let extra = '';
+  if (imgSrc) extra += `<img src="${imgSrc}" style="max-width:120px;border-radius:6px;margin-top:6px;border:1px solid var(--border)">`;
+  if (audioB64 && (cfg.voice === 'always' || cfg.voice === 'auto')) {
+    extra += `<div class="msg-audio"><audio controls src="data:audio/mp3;base64,${audioB64}" autoplay></audio></div>`;
+  }
+
+  div.innerHTML = `
+    <div class="msg-avatar">${isUser ? '👤' : '🤖'}</div>
+    <div>
+      <div class="msg-bubble">${text.replace(/\n/g,'<br>')}${extra}</div>
+      <span class="msg-time">${now()}</span>
+    </div>`;
+
+  messagesEl.appendChild(div);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+function addTyping() {
+  const div = document.createElement('div');
+  div.className = 'message friday';
+  div.id = 'typing';
+  div.innerHTML = `
+    <div class="msg-avatar">🤖</div>
+    <div class="typing"><span></span><span></span><span></span></div>`;
+  messagesEl.appendChild(div);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+function removeTyping() {
+  document.getElementById('typing')?.remove();
+}
+
+function setStatus(online) {
+  document.getElementById('statusDot').style.background = online ? 'var(--green)' : 'var(--warn)';
+  document.getElementById('statusText').textContent = online ? 'EN LIGNE' : 'HORS LIGNE';
+}
+
+// ─── ENVOI TEXTE ──────────────────────────────────────────────────────────────
+async function sendText() {
+  const text = inputField.value.trim();
+  if (!text || isProcessing) return;
+
+  isProcessing = true;
+  sendBtn.disabled = true;
+  inputField.value = '';
+  inputField.style.height = 'auto';
+
+  const imgB64 = pendingImageB64;
+  const imgSrc = imgB64 ? `data:image/jpeg;base64,${imgB64}` : null;
+  pendingImageB64 = null;
+  imageStrip.classList.remove('active');
+  imageStrip.innerHTML = '';
+
+  addMessage('user', text, null, imgSrc);
+  addTyping();
+
+  try {
+    const res = await fetch(`${cfg.apiUrl}/chat/text`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${cfg.token}`
+      },
+      body: JSON.stringify({ message: text, image_b64: imgB64 || undefined })
+    });
+
+    removeTyping();
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      addMessage('friday', `⚠️ Erreur ${res.status} : ${err.detail || 'Problème de connexion'}`);
+      setStatus(false);
+    } else {
+      const data = await res.json();
+      addMessage('friday', data.response, data.audio_b64);
+      setStatus(true);
+    }
+  } catch (e) {
+    removeTyping();
+    addMessage('friday', '⚠️ Friday est inaccessible. Vérifiez la connexion et l\'URL dans les paramètres.');
+    setStatus(false);
+  }
+
+  isProcessing = false;
+  sendBtn.disabled = false;
+}
+
+// ─── ENVOI VOCAL ──────────────────────────────────────────────────────────────
+async function sendVoice(audioBlob) {
+  isProcessing = true;
+  sendBtn.disabled = true;
+  addMessage('user', '🎙️ [Message vocal]');
+  addTyping();
+
+  const formData = new FormData();
+  formData.append('audio', audioBlob, 'recording.wav');
+
+  try {
+    const res = await fetch(`${cfg.apiUrl}/chat/voice`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${cfg.token}` },
+      body: formData
+    });
+
+    removeTyping();
+
+    if (!res.ok) {
+      addMessage('friday', `⚠️ Erreur audio ${res.status}`);
+    } else {
+      const data = await res.json();
+      addMessage('friday', data.response, data.audio_b64);
+      setStatus(true);
+    }
+  } catch (e) {
+    removeTyping();
+    addMessage('friday', '⚠️ Erreur lors de l\'envoi audio.');
+    setStatus(false);
+  }
+
+  isProcessing = false;
+  sendBtn.disabled = false;
+}
+
+// ─── MIC ──────────────────────────────────────────────────────────────────────
+micBtn.addEventListener('click', async () => {
+  if (!isRecording) {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorder = new MediaRecorder(stream);
+      audioChunks = [];
+      mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(audioChunks, { type: 'audio/wav' });
+        stream.getTracks().forEach(t => t.stop());
+        sendVoice(blob);
+      };
+      mediaRecorder.start();
+      isRecording = true;
+      micBtn.classList.add('recording');
+      micBtn.textContent = '⏹️';
+    } catch (e) {
+      addMessage('friday', '⚠️ Accès micro refusé.');
+    }
+  } else {
+    mediaRecorder.stop();
+    isRecording = false;
+    micBtn.classList.remove('recording');
+    micBtn.textContent = '🎙️';
+  }
+});
+
+// ─── WEBCAM ───────────────────────────────────────────────────────────────────
+webcamBtn.addEventListener('click', async () => {
+  if (webcamStream) {
+    stopWebcam();
+    return;
+  }
+  try {
+    webcamStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+    webcamVideo.srcObject = webcamStream;
+    webcamPreview.classList.add('active');
+    webcamBtn.classList.add('active');
+  } catch (e) {
+    addMessage('friday', '⚠️ Accès caméra refusé.');
+  }
+});
+
+function stopWebcam() {
+  if (webcamStream) {
+    webcamStream.getTracks().forEach(t => t.stop());
+    webcamStream = null;
+  }
+  webcamPreview.classList.remove('active');
+  webcamBtn.classList.remove('active');
+}
+
+webcamClose.addEventListener('click', stopWebcam);
+
+webcamCapture.addEventListener('click', () => {
+  const canvas = document.createElement('canvas');
+  canvas.width  = webcamVideo.videoWidth;
+  canvas.height = webcamVideo.videoHeight;
+  canvas.getContext('2d').drawImage(webcamVideo, 0, 0);
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+  pendingImageB64 = dataUrl.split(',')[1];
+
+  // Afficher la preview
+  imageStrip.innerHTML = `
+    <div style="position:relative;display:inline-block">
+      <img class="image-preview-thumb" src="${dataUrl}">
+      <button class="remove-img" id="removeImg">✕</button>
+    </div>`;
+  imageStrip.classList.add('active');
+  document.getElementById('removeImg').onclick = () => {
+    pendingImageB64 = null;
+    imageStrip.innerHTML = '';
+    imageStrip.classList.remove('active');
+  };
+
+  stopWebcam();
+  inputField.focus();
+  inputField.placeholder = 'Décrivez ce que Friday doit analyser...';
+});
+
+// ─── CONFIG ───────────────────────────────────────────────────────────────────
+configBtn.addEventListener('click', () => {
+  configPanel.classList.add('active');
+  overlay.classList.add('active');
+});
+
+overlay.addEventListener('click', () => {
+  configPanel.classList.remove('active');
+  overlay.classList.remove('active');
+});
+
+document.getElementById('cfgSave').addEventListener('click', () => {
+  cfg.apiUrl = document.getElementById('cfgApiUrl').value.trim();
+  cfg.token  = document.getElementById('cfgToken').value.trim();
+  cfg.voice  = document.getElementById('cfgVoice').value;
+  localStorage.setItem('friday_api_url', cfg.apiUrl);
+  localStorage.setItem('friday_token',   cfg.token);
+  localStorage.setItem('friday_voice',   cfg.voice);
+  configPanel.classList.remove('active');
+  overlay.classList.remove('active');
+  addMessage('friday', '✅ Configuration sauvegardée.');
+});
+
+// ─── RESET ────────────────────────────────────────────────────────────────────
+resetBtn.addEventListener('click', async () => {
+  try {
+    await fetch(`${cfg.apiUrl}/conversation/reset`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${cfg.token}` }
+    });
+  } catch {}
+  messagesEl.innerHTML = '';
+  addMessage('friday', 'Conversation réinitialisée. Nouvelle session démarrée.');
+});
+
+// ─── EVENTS INPUT ─────────────────────────────────────────────────────────────
+sendBtn.addEventListener('click', sendText);
+
+inputField.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendText();
+  }
+});
+
+inputField.addEventListener('input', () => {
+  inputField.style.height = 'auto';
+  inputField.style.height = Math.min(inputField.scrollHeight, 120) + 'px';
+});
+</script>
+</body>
+</html>

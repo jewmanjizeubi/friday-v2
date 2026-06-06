@@ -1,0 +1,25 @@
+# ─── Présence ─────────────────────────────────────────────
+
+- alias: "Friday — Arrivée Alex"
+  id: friday_presence_arrived
+  trigger:
+    - platform: state
+      entity_id: person.alexandre
+      from: "not_home"
+      to: "home"
+  action:
+    - service: rest_command.friday_presence
+      data:
+        event: "arrived"
+
+- alias: "Friday — Départ Alex"
+  id: friday_presence_left
+  trigger:
+    - platform: state
+      entity_id: person.alexandre
+      from: "home"
+      to: "not_home"
+  action:
+    - service: rest_command.friday_presence
+      data:
+        event: "left"

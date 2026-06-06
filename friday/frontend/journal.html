@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Friday — Journal de Bord</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c0f;
+    --bg2: #111318;
+    --bg3: #1a1d24;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.13);
+    --text: #e2e4ea;
+    --text2: #8b8f9c;
+    --text3: #525663;
+    --accent: #4fffb0;
+    --accent2: #00d4ff;
+    --warn: #ffb340;
+    --danger: #ff5c5c;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid scanlines subtil */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 3px,
+      rgba(255,255,255,0.012) 3px,
+      rgba(255,255,255,0.012) 4px
+    );
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .layout {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    min-height: 100vh;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    padding: 24px 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .sidebar-logo {
+    padding: 0 20px 24px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+
+  .sidebar-logo .fri {
+    font-family: var(--mono);
+    font-size: 18px;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+  }
+
+  .sidebar-logo .sub {
+    font-size: 11px;
+    color: var(--text3);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  .sidebar-nav {
+    padding: 0 12px;
+    flex: 1;
+  }
+
+  .nav-section {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    padding: 16px 8px 8px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--text2);
+    font-size: 13px;
+    transition: all 0.15s;
+    border: 1px solid transparent;
+  }
+
+  .nav-item:hover { background: var(--bg3); color: var(--text); }
+
+  .nav-item.active {
+    background: rgba(79, 255, 176, 0.08);
+    border-color: rgba(79, 255, 176, 0.2);
+    color: var(--accent);
+  }
+
+  .nav-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--text3);
+    flex-shrink: 0;
+  }
+
+  .nav-item.active .nav-dot { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+
+  /* Calendrier sidebar */
+  .calendar {
+    margin: 16px 12px 0;
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+  }
+
+  .cal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 8px 10px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text2);
+  }
+
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+    padding: 0 4px;
+  }
+
+  .cal-day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    border-radius: 4px;
+    cursor: pointer;
+    color: var(--text3);
+    transition: all 0.15s;
+    font-family: var(--mono);
+  }
+
+  .cal-day:hover { background: var(--bg3); color: var(--text2); }
+  .cal-day.has-entry { color: var(--text); }
+  .cal-day.has-entry::after {
+    content: '';
+    position: absolute;
+    bottom: 3px;
+    width: 3px; height: 3px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+  .cal-day { position: relative; }
+
+  .cal-day.today {
+    background: rgba(79, 255, 176, 0.15);
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  .cal-day.selected {
+    background: rgba(79, 255, 176, 0.25);
+    color: var(--accent);
+    border: 1px solid rgba(79, 255, 176, 0.4);
+  }
+
+  .cal-day.label {
+    color: var(--text3);
+    font-size: 10px;
+    cursor: default;
+  }
+  .cal-day.label:hover { background: none; }
+
+  /* Main */
+  .main {
+    padding: 32px 40px;
+    max-width: 960px;
+  }
+
+  .main-header {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .main-date {
+    font-family: var(--mono);
+    font-size: 22px;
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .main-date-sub {
+    font-size: 12px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-family: var(--mono);
+  }
+
+  /* Stats bar */
+  .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+
+  .stat-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    transition: border-color 0.2s;
+  }
+
+  .stat-card:hover { border-color: var(--border2); }
+
+  .stat-label {
+    font-size: 10px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-family: var(--mono);
+    margin-bottom: 6px;
+  }
+
+  .stat-value {
+    font-family: var(--mono);
+    font-size: 20px;
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .stat-value.green { color: var(--accent); }
+  .stat-value.blue { color: var(--accent2); }
+  .stat-value.orange { color: var(--warn); }
+
+  /* Journal entry */
+  .journal-entry {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 16px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .journal-entry:hover { border-color: var(--border2); }
+
+  .entry-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+  }
+
+  .entry-type {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .entry-badge {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .badge-briefing { background: rgba(79,255,176,0.12); color: var(--accent); border: 1px solid rgba(79,255,176,0.25); }
+  .badge-alerte { background: rgba(255,92,92,0.12); color: var(--danger); border: 1px solid rgba(255,92,92,0.25); }
+  .badge-presence { background: rgba(0,212,255,0.12); color: var(--accent2); border: 1px solid rgba(0,212,255,0.25); }
+  .badge-lecture { background: rgba(255,179,64,0.12); color: var(--warn); border: 1px solid rgba(255,179,64,0.25); }
+
+  .entry-time {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text3);
+  }
+
+  .entry-title {
+    font-size: 13px;
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .entry-body {
+    padding: 16px 18px;
+    display: none;
+  }
+
+  .entry-body.open { display: block; }
+
+  .entry-content {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.7;
+    white-space: pre-wrap;
+  }
+
+  /* Monitoring panel */
+  .monitoring-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+
+  .metric-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+  }
+
+  .metric-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  .metric-name {
+    font-size: 11px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-family: var(--mono);
+  }
+
+  .metric-val {
+    font-family: var(--mono);
+    font-size: 24px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .meter {
+    height: 4px;
+    background: var(--bg3);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+
+  .meter-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.8s ease;
+  }
+
+  .meter-fill.ok { background: var(--accent); }
+  .meter-fill.warn { background: var(--warn); }
+  .meter-fill.crit { background: var(--danger); }
+
+  /* Docker */
+  .docker-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .docker-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    background: var(--bg3);
+    border-radius: 6px;
+    font-size: 12px;
+  }
+
+  .docker-status {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .docker-status.running { background: var(--accent); box-shadow: 0 0 6px rgba(79,255,176,0.5); }
+  .docker-status.stopped { background: var(--danger); }
+
+  .docker-name { color: var(--text); flex: 1; font-family: var(--mono); font-size: 12px; }
+  .docker-port { color: var(--text3); font-family: var(--mono); font-size: 11px; }
+
+  /* Empty state */
+  .empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text3);
+  }
+
+  .empty-icon { font-size: 36px; margin-bottom: 12px; }
+  .empty-text { font-family: var(--mono); font-size: 13px; }
+
+  /* Loading */
+  .loading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text3);
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 20px 0;
+  }
+
+  @keyframes pulse { 0%,100%{opacity:0.3} 50%{opacity:1} }
+  .loading-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: pulse 1.2s ease infinite;
+  }
+  .loading-dot:nth-child(2) { animation-delay: 0.2s; }
+  .loading-dot:nth-child(3) { animation-delay: 0.4s; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="fri">FRIDAY</div>
+      <div class="sub">Journal de Bord</div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section">Navigation</div>
+      <div class="nav-item active" onclick="showView('journal')">
+        <div class="nav-dot"></div>
+        Journal du jour
+      </div>
+      <div class="nav-item" onclick="showView('monitoring')">
+        <div class="nav-dot"></div>
+        Monitoring système
+      </div>
+      <div class="nav-item" onclick="window.location.href='/'">
+        <div class="nav-dot"></div>
+        Dashboard Friday
+      </div>
+    </nav>
+
+    <div class="calendar">
+      <div class="cal-header">
+        <span id="cal-month">Mai 2026</span>
+        <span id="cal-count" style="color:var(--accent);font-size:10px;">— entrées</span>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="main-header">
+      <div class="main-date" id="main-date">—</div>
+      <div class="main-date-sub" id="main-date-sub">Chargement…</div>
+    </div>
+
+    <!-- Stats bar -->
+    <div class="stats-bar" id="stats-bar">
+      <div class="stat-card">
+        <div class="stat-label">Événements</div>
+        <div class="stat-value green" id="stat-events">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Emails traités</div>
+        <div class="stat-value blue" id="stat-emails">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Alertes réseau</div>
+        <div class="stat-value orange" id="stat-alerts">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Articles résumés</div>
+        <div class="stat-value" id="stat-articles">—</div>
+      </div>
+    </div>
+
+    <!-- Journal view -->
+    <div id="view-journal">
+      <div id="journal-container">
+        <div class="loading">
+          <div class="loading-dot"></div>
+          <div class="loading-dot"></div>
+          <div class="loading-dot"></div>
+          <span>Chargement du journal…</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Monitoring view -->
+    <div id="view-monitoring" style="display:none">
+      <div class="monitoring-grid">
+        <div class="metric-card">
+          <div class="metric-header">
+            <div class="metric-name">CPU</div>
+            <div id="cpu-temp" style="font-family:var(--mono);font-size:11px;color:var(--text3)">—°C</div>
+          </div>
+          <div class="metric-val" id="cpu-val">—%</div>
+          <div class="meter"><div class="meter-fill ok" id="cpu-bar" style="width:0%"></div></div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-header">
+            <div class="metric-name">Mémoire RAM</div>
+            <div id="mem-detail" style="font-family:var(--mono);font-size:11px;color:var(--text3)">—</div>
+          </div>
+          <div class="metric-val" id="mem-val">—%</div>
+          <div class="meter"><div class="meter-fill ok" id="mem-bar" style="width:0%"></div></div>
+        </div>
+        <div class="metric-card" style="grid-column: 1/-1">
+          <div class="metric-name" style="margin-bottom:12px">Containers Docker</div>
+          <div class="docker-list" id="docker-list">
+            <div style="color:var(--text3);font-family:var(--mono);font-size:12px;">Chargement…</div>
+          </div>
+        </div>
+      </div>
+      <div id="alerts-container"></div>
+    </div>
+  </main>
+</div>
+
+<script>
+const FRIDAY_API = window.location.origin.replace(':3000', ':8000');
+
+// ─── Utilitaires ────────────────────────────────────────────────────────────
+
+function formatTime(isoStr) {
+  if (!isoStr) return '';
+  return new Date(isoStr).toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+}
+
+function formatDate(isoStr) {
+  if (!isoStr) return '';
+  return new Date(isoStr).toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+}
+
+function today() {
+  return new Date().toISOString().split('T')[0];
+}
+
+// ─── Vues ───────────────────────────────────────────────────────────────────
+
+function showView(view) {
+  document.getElementById('view-journal').style.display = view === 'journal' ? '' : 'none';
+  document.getElementById('view-monitoring').style.display = view === 'monitoring' ? '' : 'none';
+  document.querySelectorAll('.nav-item').forEach((el, i) => {
+    el.classList.toggle('active', (view === 'journal' && i === 0) || (view === 'monitoring' && i === 1));
+  });
+  if (view === 'monitoring') loadMonitoring();
+}
+
+// ─── Journal ────────────────────────────────────────────────────────────────
+
+async function loadJournal(date) {
+  const container = document.getElementById('journal-container');
+  const todayDate = date || today();
+
+  document.getElementById('main-date').textContent = new Date(todayDate + 'T12:00:00').toLocaleDateString('fr-FR', {day:'numeric', month:'long', yyyy:'numeric'});
+  document.getElementById('main-date-sub').textContent = new Date(todayDate + 'T12:00:00').toLocaleDateString('fr-FR', {weekday:'long'}).toUpperCase();
+
+  try {
+    const res = await fetch(`${FRIDAY_API}/api/journal/${todayDate}`);
+    const data = await res.json();
+
+    if (!data.entries || data.entries.length === 0) {
+      container.innerHTML = `
+        <div class="empty">
+          <div class="empty-icon">◌</div>
+          <div class="empty-text">Aucune entrée pour ce jour.</div>
+        </div>`;
+      return;
+    }
+
+    document.getElementById('stat-events').textContent = data.stats?.events ?? '—';
+    document.getElementById('stat-emails').textContent = data.stats?.emails ?? '—';
+    document.getElementById('stat-alerts').textContent = data.stats?.alerts ?? '0';
+    document.getElementById('stat-articles').textContent = data.stats?.articles ?? '0';
+
+    container.innerHTML = data.entries.map(entry => buildEntryCard(entry)).join('');
+  } catch (e) {
+    // Fallback : tente de lire le fichier JSON du journal local
+    container.innerHTML = buildMockJournal();
+  }
+}
+
+function buildEntryCard(entry) {
+  const type = entry.type || 'briefing';
+  const badgeClass = {
+    'morning_briefing': 'badge-briefing',
+    'network_alert': 'badge-alerte',
+    'presence': 'badge-presence',
+    'article': 'badge-lecture'
+  }[type] || 'badge-briefing';
+
+  const badgeLabel = {
+    'morning_briefing': 'Briefing',
+    'network_alert': 'Alerte réseau',
+    'presence': 'Présence',
+    'article': 'Lecture'
+  }[type] || type;
+
+  const id = 'entry-' + Math.random().toString(36).slice(2);
+
+  return `
+    <div class="journal-entry">
+      <div class="entry-header" onclick="toggleEntry('${id}')">
+        <div class="entry-type">
+          <span class="entry-badge ${badgeClass}">${badgeLabel}</span>
+          <span class="entry-title">${entry.title || 'Entrée'}</span>
+        </div>
+        <span class="entry-time">${formatTime(entry.generated_at || entry.ts)}</span>
+      </div>
+      <div class="entry-body" id="${id}">
+        <div class="entry-content">${(entry.content || '').replace(/</g,'&lt;')}</div>
+      </div>
+    </div>`;
+}
+
+function buildMockJournal() {
+  // Affiche un exemple si l'API n'est pas encore disponible
+  return `
+    <div class="journal-entry">
+      <div class="entry-header" onclick="toggleEntry('mock1')">
+        <div class="entry-type">
+          <span class="entry-badge badge-briefing">Briefing</span>
+          <span class="entry-title">Briefing du matin — N8N workflow</span>
+        </div>
+        <span class="entry-time">07:00</span>
+      </div>
+      <div class="entry-body" id="mock1">
+        <div class="entry-content" style="color:var(--text3);font-style:italic">
+Le journal sera alimenté automatiquement une fois les modules N8N et l'API /api/journal déployés.
+
+Les entrées suivantes apparaîtront ici :
+• Briefing matin (tous les jours à 7h via N8N)
+• Alertes réseau détectées
+• Articles résumés via /api/summarize
+• Événements de présence (arrivée / départ)
+        </div>
+      </div>
+    </div>`;
+}
+
+function toggleEntry(id) {
+  const body = document.getElementById(id);
+  if (body) body.classList.toggle('open');
+}
+
+// ─── Monitoring ─────────────────────────────────────────────────────────────
+
+async function loadMonitoring() {
+  try {
+    const res = await fetch(`${FRIDAY_API}/api/monitoring`);
+    const data = await res.json();
+
+    // CPU
+    const cpu = data.cpu || {};
+    const cpuPct = cpu.percent || 0;
+    document.getElementById('cpu-val').textContent = cpuPct + '%';
+    document.getElementById('cpu-temp').textContent = cpu.temp_celsius ? cpu.temp_celsius + '°C' : '—';
+    const cpuBar = document.getElementById('cpu-bar');
+    cpuBar.style.width = cpuPct + '%';
+    cpuBar.className = 'meter-fill ' + (cpuPct > 85 ? 'crit' : cpuPct > 65 ? 'warn' : 'ok');
+
+    // RAM
+    const mem = data.memory || {};
+    const memPct = mem.percent || 0;
+    document.getElementById('mem-val').textContent = memPct + '%';
+    document.getElementById('mem-detail').textContent = `${mem.used_gb}/${mem.total_gb} Go`;
+    const memBar = document.getElementById('mem-bar');
+    memBar.style.width = memPct + '%';
+    memBar.className = 'meter-fill ' + (memPct > 85 ? 'crit' : memPct > 70 ? 'warn' : 'ok');
+
+    // Docker
+    const dockerList = document.getElementById('docker-list');
+    if (data.docker && data.docker.length > 0) {
+      dockerList.innerHTML = data.docker.map(c => `
+        <div class="docker-item">
+          <div class="docker-status ${c.running ? 'running' : 'stopped'}"></div>
+          <div class="docker-name">${c.name}</div>
+          <div class="docker-port">${c.ports ? c.ports.split(',')[0] : ''}</div>
+        </div>`).join('');
+    } else {
+      dockerList.innerHTML = '<div style="color:var(--text3);font-family:var(--mono);font-size:12px;">Aucun container trouvé</div>';
+    }
+
+    // Alertes
+    const alertsContainer = document.getElementById('alerts-container');
+    if (data.alerts && data.alerts.length > 0) {
+      alertsContainer.innerHTML = data.alerts.map(a => `
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(255,92,92,0.08);border:1px solid rgba(255,92,92,0.2);border-radius:6px;margin-bottom:8px;font-family:var(--mono);font-size:12px;color:var(--danger);">
+          ⚠ ${a.message}
+        </div>`).join('');
+    } else {
+      alertsContainer.innerHTML = '<div style="font-family:var(--mono);font-size:12px;color:var(--text3);">Aucune alerte active.</div>';
+    }
+
+  } catch (e) {
+    document.getElementById('docker-list').innerHTML =
+      `<div style="color:var(--danger);font-family:var(--mono);font-size:12px;">API non disponible : ${e.message}</div>`;
+  }
+}
+
+// ─── Calendrier ─────────────────────────────────────────────────────────────
+
+function buildCalendar() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const todayNum = now.getDate();
+
+  document.getElementById('cal-month').textContent =
+    now.toLocaleDateString('fr-FR', {month:'long', year:'numeric'});
+
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const startOffset = (firstDay + 6) % 7; // Lundi = 0
+
+  const grid = document.getElementById('cal-grid');
+  const labels = ['L','M','M','J','V','S','D'];
+  grid.innerHTML = labels.map(l => `<div class="cal-day label">${l}</div>`).join('');
+
+  for (let i = 0; i < startOffset; i++) {
+    grid.innerHTML += '<div class="cal-day"></div>';
+  }
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const isToday = d === todayNum;
+    const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    grid.innerHTML += `
+      <div class="cal-day${isToday ? ' today selected' : ''}" onclick="loadJournal('${dateStr}')">${d}</div>`;
+  }
+}
+
+// ─── Init ────────────────────────────────────────────────────────────────────
+
+buildCalendar();
+loadJournal();
+
+// Refresh monitoring toutes les 30s si la vue est active
+setInterval(() => {
+  if (document.getElementById('view-monitoring').style.display !== 'none') {
+    loadMonitoring();
+  }
+}, 30000);
+</script>
+</body>
+</html>

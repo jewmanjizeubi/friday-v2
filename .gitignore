@@ -1,0 +1,29 @@
+# ─── Secrets ──────────────────────────────────────────────
+.env
+homeassistant/secrets.yaml
+
+# ─── Données runtime ──────────────────────────────────────
+data/
+piper-voices/
+homeassistant/home-assistant_v2.db*
+homeassistant/.storage/
+homeassistant/.cache/
+homeassistant/home-assistant.log*
+homeassistant/.ha_run.lock
+homeassistant/.HA_VERSION
+
+# ─── Python ───────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.save
+.venv/
+venv/
+
+# ─── Docker ───────────────────────────────────────────────
+*.log
+
+# ─── OS ───────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
