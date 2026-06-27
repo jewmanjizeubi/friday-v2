@@ -16,6 +16,7 @@ from api.monitoring import router as monitoring_router
 from api.journal_endpoint import router as journal_router
 from api.presence_endpoint import router as presence_router
 from api.auth import router as auth_router
+from api.briefing import router as briefing_router
 
 app = FastAPI(title="Friday API", version="2.0.0")
 
@@ -30,6 +31,7 @@ app.include_router(monitoring_router)
 app.include_router(journal_router)
 app.include_router(presence_router)
 app.include_router(auth_router)
+app.include_router(briefing_router)
 
 brain = FridayBrain()
 
@@ -119,3 +121,45 @@ async def reset_conversation(_=Depends(verify_token)):
 async def search_memory(q: str, _=Depends(verify_token)):
     from tools.dispatcher import _handle_memory_search
     return _handle_memory_search({"query": q})
+
+@app.post("/notify")
+async def notify_iphone(req: TextRequest, _=Depends(verify_token)):
+    """Envoie une notification directement sur l'iPhone via HA"""
+    import requests as req_lib
+    ha_url = f"http://{settings.HA_HOST}:{settings.HA_PORT}/api/services/notify/mobile_app_iphone_de_alex"
+    headers = {
+        "Authorization": f"Bearer {settings.HA_TOKEN}",
+        "Content-Type": "application/json"
+    }
+    r = req_lib.post(ha_url, json={"message": req.message, "title": "FRIDAY"}, headers=headers, timeout=5)
+    return {"success": r.status_code == 200, "status": r.status_code}
+
+@app.get("/weather")
+async def get_weather():
+    """Météo via Open-Meteo (pas de clé requise) — Guérande"""
+    import requests as req_lib
+    try:
+        r = req_lib.get(
+            "https://api.open-meteo.com/v1/forecast"
+            "?latitude=47.33&longitude=-2.43"
+            "&current=temperature_2m,relative_humidity_2m,apparent_temperature,wind_speed_10m,weather_code"
+            "&wind_speed_unit=kmh&timezone=Europe/Paris",
+            timeout=5
+        )
+        c = r.json()["current"]
+        wc = c["weather_code"]
+        desc = (
+            "DÉGAGÉ" if wc <= 1 else
+            "NUAGEUX" if wc <= 3 else
+            "BROUILLARD" if wc <= 48 else
+            "PLUIE" if wc <= 67 else
+            "NEIGE" if wc <= 77 else
+            "ORAGE"
+        )
+        return {
+            "main": {"temp": c["temperature_2m"], "feels_like": c["apparent_temperature"], "humidity": c["relative_humidity_2m"]},
+            "wind": {"speed": c["wind_speed_10m"] / 3.6},
+            "weather": [{"main": desc, "description": desc.lower()}]
+        }
+    except Exception as e:
+        return {"error": str(e)}

@@ -26,7 +26,7 @@ def text_to_speech(text: str) -> bytes:
     try:
         process = subprocess.run(
             [
-                "piper-tts",
+                "piper",
                 "--model", settings.PIPER_MODEL,
                 "--output-raw"
             ],

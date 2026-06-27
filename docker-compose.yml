@@ -20,9 +20,17 @@ services:
       - "8000:8000"
     volumes:
       - ./data/memory:/data/friday/memory
-      - /usr/local/bin/piper-tts:/usr/local/bin/piper-tts:ro
+      - /usr/local/bin/piper-tts/piper:/usr/local/bin/piper:ro 
       - ./piper-voices:/piper-voices:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./data/journal:/data/friday/journal
+      - /usr/local/bin/piper-tts/libespeak-ng.so.1:/usr/lib/libespeak-ng.so.1:ro
+      - /usr/local/bin/piper-tts/libespeak-ng.so.1.52.0:/usr/lib/libespeak-ng.so.1.52.0:ro
+      - /usr/local/bin/piper-tts/libonnxruntime.so.1.14.1:/usr/lib/libonnxruntime.so.1.14.1:ro
+      - /usr/local/bin/piper-tts/libpiper_phonemize.so.1.2.0:/usr/lib/libpiper_phonemize.so.1.2.0:ro
+      - /usr/local/bin/piper-tts/libpiper_phonemize.so.1:/usr/lib/libpiper_phonemize.so.1:ro
+      - /usr/local/bin/piper-tts/libonnxruntime.so.1:/usr/lib/libonnxruntime.so.1:ro
+      - /usr/local/bin/piper-tts/espeak-ng-data:/usr/share/espeak-ng-data:ro
     env_file:
       - .env
     depends_on:

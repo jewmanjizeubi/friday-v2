@@ -659,9 +659,23 @@
 </div>
 
 <script>
+// ── AUTH CHECK ──
+async function checkAuth() {
+  try {
+    const res = await
+fetch(`http://${window.location.hostname}:3000/api/auth/verify`, {
+      credentials: 'include'
+    });
+    if (!res.ok) window.location.href = '/login.html';
+  } catch {
+    window.location.href = '/login.html';
+  }
+}
+checkAuth();
+
   // ── HORLOGE ──
   const DAYS = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
-  const MONTHS = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+   const MONTHS = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
 
   function updateClock() {
     const now = new Date();

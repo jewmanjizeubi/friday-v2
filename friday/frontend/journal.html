@@ -600,7 +600,7 @@ async function loadJournal(date) {
   document.getElementById('main-date-sub').textContent = new Date(todayDate + 'T12:00:00').toLocaleDateString('fr-FR', {weekday:'long'}).toUpperCase();
 
   try {
-    const res = await fetch(`${FRIDAY_API}/api/journal/${todayDate}`);
+    const res = await fetch(`${FRIDAY_API}/journal/${todayDate}`);
     const data = await res.json();
 
     if (!data.entries || data.entries.length === 0) {
@@ -691,7 +691,7 @@ function toggleEntry(id) {
 
 async function loadMonitoring() {
   try {
-    const res = await fetch(`${FRIDAY_API}/api/monitoring`);
+    const res = await fetch(`${FRIDAY_API}/monitoring`);
     const data = await res.json();
 
     // CPU

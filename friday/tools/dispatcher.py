@@ -64,7 +64,9 @@ def _handle_gmail(params: dict) -> dict:
     if action == "list_unread":
         max_r = params.get("max_results", 10)
         results = service.users().messages().list(
-            userId="me", labelIds=["UNREAD"], maxResults=max_r
+            userId="me",
+            q="is:unread category:primary",
+            maxResults=max_r
         ).execute()
         messages = results.get("messages", [])
         summaries = []
