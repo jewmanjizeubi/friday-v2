@@ -65,5 +65,8 @@ class Settings:
     OPENWEATHER_API_KEY: str = os.getenv("OPENWEATHER_API_KEY", "")
     OPENWEATHER_CITY: str = os.getenv("OPENWEATHER_CITY", "Le Croisic")
 
-
+    # ─── NAS Synology ─────────────────────────────────────
+    NAS_HOST: str = os.getenv("NAS_HOST", "192.168.1.233")
+    NAS_USERNAME: str = os.getenv("NAS_USERNAME", "")
+    NAS_PASSWORD: str = os.getenv("NAS_PASSWORD", "")
 settings = Settings()

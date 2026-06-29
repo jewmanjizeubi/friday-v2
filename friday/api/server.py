@@ -17,7 +17,7 @@ from api.journal_endpoint import router as journal_router
 from api.presence_endpoint import router as presence_router
 from api.auth import router as auth_router
 from api.briefing import router as briefing_router
-
+from api.nas import router as nas_router
 app = FastAPI(title="Friday API", version="2.0.0")
 
 app.add_middleware(
@@ -32,6 +32,7 @@ app.include_router(journal_router)
 app.include_router(presence_router)
 app.include_router(auth_router)
 app.include_router(briefing_router)
+app.include_router(nas_router)
 
 brain = FridayBrain()
 
